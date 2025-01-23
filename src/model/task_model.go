@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql"
 	"encoding/json"
+	"io"
 	"log"
 	"repos/task_manager/src/db"
 	"repos/task_manager/src/utils"
@@ -16,6 +17,11 @@ type Task struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+type InsertResult struct {
+	Id        int       `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type TaskRepository struct{}
 
 func NewTaskResitory() *TaskRepository {
@@ -24,13 +30,13 @@ func NewTaskResitory() *TaskRepository {
 
 func (r *TaskRepository) GetAll() string {
 
-	database, err := db.InitDB()
+	db, err := db.InitDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer database.Close()
+	defer db.Close()
 
-	result, err := database.Query("SELECT * FROM tasks LIMIT 500")
+	result, err := db.Query("SELECT * FROM tasks LIMIT 500")
 	utils.LogIfError(err)
 	defer result.Close()
 
@@ -54,11 +60,11 @@ func (r *TaskRepository) GetAll() string {
 }
 
 func (r *TaskRepository) GetOne(id int) string {
-	database, err := db.InitDB()
+	db, err := db.InitDB()
 	utils.LogIfError(err)
-	defer database.Close()
+	defer db.Close()
 
-	stm, err := database.Prepare("SELECT * FROM tasks WHERE id = ? LIMIT 1")
+	stm, err := db.Prepare("SELECT * FROM tasks WHERE id = ? LIMIT 1")
 	utils.LogIfError(err)
 	defer stm.Close()
 
@@ -79,4 +85,34 @@ func (r *TaskRepository) GetOne(id int) string {
 	utils.LogIfError(err)
 
 	return string(taskJson)
+}
+
+func (r *TaskRepository) Post(requestBody io.ReadCloser) string {
+	decoder := json.NewDecoder(requestBody)
+	var task Task
+	err := decoder.Decode(&task)
+	utils.LogIfError(err)
+
+	db, err := db.InitDB()
+	utils.LogIfError(err)
+	defer db.Close()
+
+	stm, err := db.Prepare(
+		`INSERT INTO tasks (title, description) 
+		VALUES (?, ?) 
+		RETURNING id, created_at`,
+	)
+	utils.LogIfError(err)
+
+	result := stm.QueryRow(task.Title, task.Description)
+	var insertResult InsertResult
+	err = result.Scan(&insertResult.Id, &insertResult.CreatedAt)
+	utils.LogIfError(err)
+
+	var returnDataJson []byte
+
+	returnDataJson, err = json.Marshal(insertResult)
+	utils.LogIfError(err)
+
+	return string(returnDataJson)
 }

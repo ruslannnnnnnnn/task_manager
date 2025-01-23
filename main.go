@@ -13,8 +13,9 @@ func main() {
 	r := mux.NewRouter()
 
 	// Routes
-	r.HandleFunc("/api/task.json/{id}", controller.TaskHandler).Methods("GET")
-	r.HandleFunc("/api/task.json", controller.TaskHandler).Methods("GET")
+	r.HandleFunc("/api/task.json/{id}", controller.TaskGetHandler).Methods("GET")
+	r.HandleFunc("/api/task.json", controller.TaskGetHandler).Methods("GET")
+	r.HandleFunc("/api/task.json", controller.TaskPostHandler).Methods("POST")
 	// Routes
 
 	port := ":8080"
