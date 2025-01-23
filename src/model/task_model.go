@@ -24,11 +24,11 @@ type InsertResult struct {
 
 type TaskRepository struct{}
 
-func NewTaskResitory() *TaskRepository {
+func NewTaskRepository() *TaskRepository {
 	return &TaskRepository{}
 }
 
-func (r *TaskRepository) GetAll() string {
+func (r *TaskRepository) GetAll() (resultJson string, statusCode int) {
 
 	db, err := db.InitDB()
 	if err != nil {
@@ -55,11 +55,11 @@ func (r *TaskRepository) GetAll() string {
 	tasksJson, err := json.Marshal(tasks)
 	utils.LogIfError(err)
 
-	return string(tasksJson)
+	return string(tasksJson), 200
 
 }
 
-func (r *TaskRepository) GetOne(id int) string {
+func (r *TaskRepository) GetOne(id int) (resultJson string, statusCode int) {
 	db, err := db.InitDB()
 	utils.LogIfError(err)
 	defer db.Close()
@@ -74,7 +74,7 @@ func (r *TaskRepository) GetOne(id int) string {
 
 	err = result.Scan(&task.Id, &task.Title, &task.Description, &task.CreatedAt)
 	if err == sql.ErrNoRows {
-		return "{}"
+		return `{"error":"task not found"}`, 404
 	}
 	utils.LogIfError(err)
 
@@ -84,10 +84,10 @@ func (r *TaskRepository) GetOne(id int) string {
 	taskJson, err := json.Marshal(task)
 	utils.LogIfError(err)
 
-	return string(taskJson)
+	return string(taskJson), 200
 }
 
-func (r *TaskRepository) Post(requestBody io.ReadCloser) string {
+func (r *TaskRepository) Post(requestBody io.ReadCloser) (resultJson string, statusCode int) {
 	decoder := json.NewDecoder(requestBody)
 	var task Task
 	err := decoder.Decode(&task)
@@ -114,5 +114,5 @@ func (r *TaskRepository) Post(requestBody io.ReadCloser) string {
 	returnDataJson, err = json.Marshal(insertResult)
 	utils.LogIfError(err)
 
-	return string(returnDataJson)
+	return string(returnDataJson), 200
 }

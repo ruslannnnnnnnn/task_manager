@@ -14,7 +14,9 @@ func main() {
 
 	// Routes
 	r.HandleFunc("/api/task.json/{id}", controller.TaskGetHandler).Methods("GET")
+	r.HandleFunc("/api/task.json/", controller.TaskGetHandler).Methods("GET")
 	r.HandleFunc("/api/task.json", controller.TaskGetHandler).Methods("GET")
+
 	r.HandleFunc("/api/task.json", controller.TaskPostHandler).Methods("POST")
 	// Routes
 
