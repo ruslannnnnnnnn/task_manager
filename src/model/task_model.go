@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+// TODO configure the app to return status 500 if it fails to handle the request
+
 type Task struct {
 	Id          int       `json:"id"`
 	Title       string    `json:"title"`
@@ -64,7 +66,7 @@ func (r *TaskRepository) GetOne(id int) (resultJson string, statusCode int) {
 	utils.LogIfError(err)
 	defer db.Close()
 
-	stm, err := db.Prepare("SELECT * FROM tasks WHERE id = ? LIMIT 1")
+	stm, err := db.Prepare("SELECT * FROM tasks WHERE id = $1 LIMIT 1")
 	utils.LogIfError(err)
 	defer stm.Close()
 
@@ -99,7 +101,7 @@ func (r *TaskRepository) Post(requestBody io.ReadCloser) (resultJson string, sta
 
 	stm, err := db.Prepare(
 		`INSERT INTO tasks (title, description) 
-		VALUES (?, ?) 
+		VALUES ($1, $2) 
 		RETURNING id, created_at`,
 	)
 	utils.LogIfError(err)
