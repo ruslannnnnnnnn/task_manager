@@ -10,9 +10,7 @@ import (
 )
 
 func TaskGetHandler(w http.ResponseWriter, r *http.Request) {
-	result := "{}"
-	statusCode := 200
-
+	var result *model.ApiResponse
 	w.Header().Set("Content-Type", "application/json")
 
 	task_repo := model.NewTaskRepository()
@@ -22,26 +20,21 @@ func TaskGetHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(string_id)
 
 	if string_id == "" {
-		result, statusCode = task_repo.GetAll()
+		result = task_repo.GetAll(500, 0)
 	} else if err == nil {
-		result, statusCode = task_repo.GetOne(id)
-	} else {
-		result = `{"error":"idk bruh"}`
-		statusCode = 500
+		result = task_repo.GetOne(id)
 	}
 
-	w.WriteHeader(statusCode)
-	fmt.Fprint(w, result)
+	w.WriteHeader(result.StatusCode)
+	fmt.Fprint(w, result.JsonData)
 }
 
 func TaskPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	task_repo := model.NewTaskRepository()
 
-	var result string
-	var statusCode int
-	result, statusCode = task_repo.Post(r.Body)
+	result := task_repo.Post(r.Body)
 
-	w.WriteHeader(statusCode)
-	fmt.Fprint(w, result)
+	w.WriteHeader(result.StatusCode)
+	fmt.Fprint(w, result.JsonData)
 }

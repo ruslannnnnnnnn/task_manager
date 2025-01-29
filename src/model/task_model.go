@@ -19,9 +19,14 @@ type Task struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
-type InsertResult struct {
+type TaskInsertResult struct {
 	Id        int       `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type TaskInsertRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type TaskRepository struct{}
@@ -30,7 +35,7 @@ func NewTaskRepository() *TaskRepository {
 	return &TaskRepository{}
 }
 
-func (r *TaskRepository) GetAll() (resultJson string, statusCode int) {
+func (r *TaskRepository) GetAll(limit int, offset int) *ApiResponse {
 
 	db, err := db.InitDB()
 	if err != nil {
@@ -38,9 +43,11 @@ func (r *TaskRepository) GetAll() (resultJson string, statusCode int) {
 	}
 	defer db.Close()
 
-	result, err := db.Query("SELECT * FROM tasks LIMIT 500")
+	stm, err := db.Prepare("SELECT * FROM tasks LIMIT $1 OFFSET $2")
 	utils.LogIfError(err)
-	defer result.Close()
+	result, err := stm.Query(limit, offset)
+	utils.LogIfError(err)
+	defer stm.Close()
 
 	var tasks []Task
 
@@ -57,11 +64,11 @@ func (r *TaskRepository) GetAll() (resultJson string, statusCode int) {
 	tasksJson, err := json.Marshal(tasks)
 	utils.LogIfError(err)
 
-	return string(tasksJson), 200
+	return &ApiResponse{string(tasksJson), 200}
 
 }
 
-func (r *TaskRepository) GetOne(id int) (resultJson string, statusCode int) {
+func (r *TaskRepository) GetOne(id int) *ApiResponse {
 	db, err := db.InitDB()
 	utils.LogIfError(err)
 	defer db.Close()
@@ -76,7 +83,7 @@ func (r *TaskRepository) GetOne(id int) (resultJson string, statusCode int) {
 
 	err = result.Scan(&task.Id, &task.Title, &task.Description, &task.CreatedAt)
 	if err == sql.ErrNoRows {
-		return `{"error":"task not found"}`, 404
+		return &ApiResponse{`{"error":"task not found"}`, 404}
 	}
 	utils.LogIfError(err)
 
@@ -86,10 +93,10 @@ func (r *TaskRepository) GetOne(id int) (resultJson string, statusCode int) {
 	taskJson, err := json.Marshal(task)
 	utils.LogIfError(err)
 
-	return string(taskJson), 200
+	return &ApiResponse{string(taskJson), 200}
 }
 
-func (r *TaskRepository) Post(requestBody io.ReadCloser) (resultJson string, statusCode int) {
+func (r *TaskRepository) Post(requestBody io.ReadCloser) *ApiResponse {
 	decoder := json.NewDecoder(requestBody)
 	var task Task
 	err := decoder.Decode(&task)
@@ -107,7 +114,7 @@ func (r *TaskRepository) Post(requestBody io.ReadCloser) (resultJson string, sta
 	utils.LogIfError(err)
 
 	result := stm.QueryRow(task.Title, task.Description)
-	var insertResult InsertResult
+	var insertResult TaskInsertResult
 	err = result.Scan(&insertResult.Id, &insertResult.CreatedAt)
 	utils.LogIfError(err)
 
@@ -116,5 +123,5 @@ func (r *TaskRepository) Post(requestBody io.ReadCloser) (resultJson string, sta
 	returnDataJson, err = json.Marshal(insertResult)
 	utils.LogIfError(err)
 
-	return string(returnDataJson), 200
+	return &ApiResponse{string(returnDataJson), 200}
 }
