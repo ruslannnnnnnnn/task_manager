@@ -38,3 +38,21 @@ func TaskPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(result.StatusCode)
 	fmt.Fprint(w, result.JsonData)
 }
+
+func TaskDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	task_repo := model.NewTaskRepository()
+
+	vars := mux.Vars(r)
+	string_id := vars["id"]
+	id, err := strconv.Atoi(string_id)
+	if err != nil {
+		w.WriteHeader(422)
+		fmt.Fprint(w, "{\"error\":\"id is invalid.\"}")
+		return
+	}
+
+	result := task_repo.Delete(id)
+	w.WriteHeader(result.StatusCode)
+	fmt.Fprint(w, result.JsonData)
+}

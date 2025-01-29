@@ -125,3 +125,24 @@ func (r *TaskRepository) Post(requestBody io.ReadCloser) *ApiResponse {
 
 	return &ApiResponse{string(returnDataJson), 200}
 }
+
+func (r *TaskRepository) Delete(id int) *ApiResponse {
+	db, err := db.InitDB()
+	utils.LogIfError(err)
+
+	defer db.Close()
+	stm, err := db.Prepare("DELETE FROM tasks WHERE id = $1")
+	utils.LogIfError(err)
+
+	result, err := stm.Exec(id)
+	utils.LogIfError(err)
+
+	rowsAffected, err := result.RowsAffected()
+	utils.LogIfError(err)
+
+	if rowsAffected == 0 {
+		return &ApiResponse{`{"error":"task not found"}`, 404}
+	} else {
+		return &ApiResponse{`{"result":"success"}`, 200}
+	}
+}

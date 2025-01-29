@@ -18,6 +18,8 @@ func main() {
 	r.HandleFunc("/api/task.json", controller.TaskGetHandler).Methods("GET")
 
 	r.HandleFunc("/api/task.json", controller.TaskPostHandler).Methods("POST")
+
+	r.HandleFunc("/api/task.json/{id}", controller.TaskDeleteHandler).Methods("DELETE")
 	// Routes
 
 	port := ":8080"
