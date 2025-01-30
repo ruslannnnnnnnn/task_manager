@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"repos/task_manager/src/controller"
+	"repos/task_manager/src/db"
 
 	"github.com/gorilla/mux"
 )
@@ -21,6 +22,8 @@ func main() {
 
 	r.HandleFunc("/api/task.json/{id}", controller.TaskDeleteHandler).Methods("DELETE")
 	// Routes
+
+	db.InitAutoMigrations()
 
 	port := ":8080"
 	log.Printf("Server started on http://localhost%s", port)

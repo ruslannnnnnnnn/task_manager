@@ -1,5 +1,5 @@
 # Task manager
-#### it's a simple rest api app that allows you to perform CRUD operations on 
+#### it's a simple rest api app that allows you to perform CRUD operations on tasks
 
 ## How to run the project
 #### you'll need docker and docker compose installed on your machine

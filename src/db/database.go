@@ -1,15 +1,16 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"os"
+	"repos/task_manager/src/entity"
 	"repos/task_manager/src/utils"
 	"strconv"
 
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 )
 
 const env_path = "/app/.env"
@@ -22,8 +23,7 @@ type DatabaseConfig struct {
 	dbname   string
 }
 
-func InitDB() (*sql.DB, error) {
-
+func getDBConfig() (string, error) {
 	err := godotenv.Load(env_path)
 
 	if err != nil {
@@ -44,16 +44,23 @@ func InitDB() (*sql.DB, error) {
 	pgsqlConfig := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		dbCfg.host, dbCfg.port, dbCfg.user, dbCfg.password, dbCfg.dbname)
+	return pgsqlConfig, err
+}
 
-	db, err := sql.Open("postgres", pgsqlConfig)
-	if err != nil {
-		return nil, err
-	}
+func InitDB() (*gorm.DB, error) {
 
-	err = db.Ping()
-	if err != nil {
-		return nil, err
-	}
+	pgsqlConfig, err := getDBConfig()
+	utils.LogIfError(err)
 
-	return db, nil
+	db, err := gorm.Open(postgres.Open(pgsqlConfig), &gorm.Config{})
+
+	return db, err
+}
+
+func InitAutoMigrations() {
+	db, err := InitDB()
+	utils.LogIfError(err)
+
+	err = db.AutoMigrate(&entity.Task{})
+	utils.LogIfError(err)
 }

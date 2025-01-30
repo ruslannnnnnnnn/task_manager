@@ -1,12 +1,15 @@
 package model
 
 type Model interface {
-	GetOne() *ApiResponse
-	GetAll() *ApiResponse
-	Post() *ApiResponse
-	Put() *ApiResponse
-	Delete() *ApiResponse
+	GetOne(id int) *ApiResponse
+	GetAll(limit int, offset int) *ApiResponse
+	Post(req PostRequest) *ApiResponse
+	Put(req PutRequest) *ApiResponse
+	Delete(id int) *ApiResponse
 }
+
+type PostRequest interface{}
+type PutRequest interface{}
 
 type ApiResponse struct {
 	JsonData   string
