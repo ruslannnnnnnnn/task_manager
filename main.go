@@ -13,14 +13,16 @@ func main() {
 
 	r := mux.NewRouter()
 
+	taskController := controller.NewTaskController()
+
 	// Routes
-	r.HandleFunc("/api/task.json/{id}", controller.TaskGetHandler).Methods("GET")
-	r.HandleFunc("/api/task.json/", controller.TaskGetHandler).Methods("GET")
-	r.HandleFunc("/api/task.json", controller.TaskGetHandler).Methods("GET")
+	r.HandleFunc("/api/task.json/{id}", taskController.GetController).Methods("GET")
+	r.HandleFunc("/api/task.json/", taskController.GetController).Methods("GET")
+	r.HandleFunc("/api/task.json", taskController.GetController).Methods("GET")
 
-	r.HandleFunc("/api/task.json", controller.TaskPostHandler).Methods("POST")
+	r.HandleFunc("/api/task.json", taskController.PostController).Methods("POST")
 
-	r.HandleFunc("/api/task.json", controller.TaskDeleteHandler).Methods("DELETE")
+	r.HandleFunc("/api/task.json", taskController.DeleteController).Methods("DELETE")
 	// Routes
 
 	db.InitAutoMigrations()

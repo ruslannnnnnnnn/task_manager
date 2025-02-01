@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"gorm.io/gorm"
+	"net/http"
 	"repos/task_manager/src/db"
 	"repos/task_manager/src/entity"
 	"time"
@@ -55,7 +56,7 @@ func (t TaskModel) GetOne(id int) (*ApiResponse, error) {
 	if task.ID == 0 {
 		return &ApiResponse{
 			`{"error":"task not found"}`,
-			404,
+			http.StatusNotFound,
 		}, nil
 	}
 
@@ -66,7 +67,7 @@ func (t TaskModel) GetOne(id int) (*ApiResponse, error) {
 
 	return &ApiResponse{
 		string(jsonResult),
-		200,
+		http.StatusOK,
 	}, nil
 }
 
@@ -85,14 +86,14 @@ func (t TaskModel) GetAll(limit int, offset int) (*ApiResponse, error) {
 	}
 	return &ApiResponse{
 		string(result),
-		200,
+		http.StatusOK,
 	}, nil
 }
 
 func (t TaskModel) Post(req PostRequest) (*ApiResponse, error) {
 	postReq, ok := req.(TaskPostRequest)
 	if !ok {
-		return &ApiResponse{`{"error": "bad request"}`, 400}, nil
+		return &ApiResponse{`{"error": "bad request"}`, http.StatusBadRequest}, nil
 	}
 
 	db, err := db.InitDB()
@@ -115,7 +116,7 @@ func (t TaskModel) Post(req PostRequest) (*ApiResponse, error) {
 		return &ApiResponse{}, err
 	}
 
-	return &ApiResponse{string(resultJson), 200}, nil
+	return &ApiResponse{string(resultJson), http.StatusCreated}, nil
 }
 
 func (t TaskModel) Put(req PutRequest) (*ApiResponse, error) {
@@ -128,7 +129,7 @@ func (t TaskModel) Put(req PutRequest) (*ApiResponse, error) {
 func (t TaskModel) Delete(req DeleteRequest) (*ApiResponse, error) {
 	delReq, ok := req.(TaskDeleteRequest)
 	if !ok {
-		return &ApiResponse{`{"error": "bad request"}`, 400}, nil
+		return &ApiResponse{`{"error": "bad request"}`, http.StatusBadRequest}, nil
 	}
 	db, err := db.InitDB()
 	if err != nil {
@@ -139,7 +140,7 @@ func (t TaskModel) Delete(req DeleteRequest) (*ApiResponse, error) {
 	db.Find(&tasks, "id in ?", delReq.Ids)
 	if len(tasks) == 0 {
 		return &ApiResponse{
-			`{"error":"tasks not found"}`, 404,
+			`{"error":"tasks not found"}`, http.StatusNotFound,
 		}, nil
 	}
 
@@ -157,6 +158,6 @@ func (t TaskModel) Delete(req DeleteRequest) (*ApiResponse, error) {
 
 	return &ApiResponse{
 		string(resultJson),
-		200,
+		http.StatusOK,
 	}, nil
 }
