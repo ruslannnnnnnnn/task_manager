@@ -26,6 +26,8 @@ func TaskGetHandler(w http.ResponseWriter, r *http.Request) {
 		result = taskModel.GetAll(500, 0)
 	} else if err == nil {
 		result = taskModel.GetOne(id)
+	} else {
+		result = &model.ApiResponse{JsonData: `{"error":"invalid id"}`, StatusCode: 400}
 	}
 
 	w.WriteHeader(result.StatusCode)
@@ -51,16 +53,17 @@ func TaskDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	taskModel := model.NewTaskModel()
 
-	vars := mux.Vars(r)
-	stringId := vars["id"]
-	id, err := strconv.Atoi(stringId)
-	if err != nil {
-		w.WriteHeader(422)
-		fmt.Fprint(w, "{\"error\":\"id is invalid.\"}")
-		return
+	decoder := json.NewDecoder(r.Body)
+	var taskDeleteRequest model.TaskDeleteRequest
+	err := decoder.Decode(&taskDeleteRequest)
+
+	var result *model.ApiResponse
+	if err == nil {
+		result = taskModel.Delete(taskDeleteRequest)
+	} else {
+		result = &model.ApiResponse{JsonData: `{"error":"invalid request body"}`, StatusCode: 422}
 	}
 
-	result := taskModel.Delete(id)
 	w.WriteHeader(result.StatusCode)
 	fmt.Fprint(w, result.JsonData)
 }

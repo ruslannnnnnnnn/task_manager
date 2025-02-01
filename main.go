@@ -20,7 +20,7 @@ func main() {
 
 	r.HandleFunc("/api/task.json", controller.TaskPostHandler).Methods("POST")
 
-	r.HandleFunc("/api/task.json/{id}", controller.TaskDeleteHandler).Methods("DELETE")
+	r.HandleFunc("/api/task.json", controller.TaskDeleteHandler).Methods("DELETE")
 	// Routes
 
 	db.InitAutoMigrations()

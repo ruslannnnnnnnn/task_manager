@@ -10,6 +10,7 @@ type Model interface {
 
 type PostRequest interface{}
 type PutRequest interface{}
+type DeleteRequest interface{}
 
 type ApiResponse struct {
 	JsonData   string
