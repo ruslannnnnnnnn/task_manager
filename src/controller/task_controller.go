@@ -23,9 +23,17 @@ func TaskGetHandler(w http.ResponseWriter, r *http.Request) {
 
 	if stringId == "" {
 		// TODO implement getting limit and offset from uri params
-		result = taskModel.GetAll(500, 0)
+		result, err = taskModel.GetAll(500, 0)
+		if err != nil {
+			HandleApiError(w)
+			return
+		}
 	} else if err == nil {
-		result = taskModel.GetOne(id)
+		result, err = taskModel.GetOne(id)
+		if err != nil {
+			HandleApiError(w)
+			return
+		}
 	} else {
 		result = &model.ApiResponse{JsonData: `{"error":"invalid id"}`, StatusCode: 400}
 	}
@@ -43,7 +51,11 @@ func TaskPostHandler(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&taskPostRequest)
 	utils.LogIfError(err)
 
-	result := taskModel.Post(taskPostRequest)
+	result, err := taskModel.Post(taskPostRequest)
+	if err != nil {
+		HandleApiError(w)
+		return
+	}
 
 	w.WriteHeader(result.StatusCode)
 	fmt.Fprint(w, result.JsonData)
@@ -59,7 +71,11 @@ func TaskDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	var result *model.ApiResponse
 	if err == nil {
-		result = taskModel.Delete(taskDeleteRequest)
+		result, err = taskModel.Delete(taskDeleteRequest)
+		if err != nil {
+			HandleApiError(w)
+			return
+		}
 	} else {
 		result = &model.ApiResponse{JsonData: `{"error":"invalid request body"}`, StatusCode: 422}
 	}

@@ -1,11 +1,11 @@
 package model
 
 type Model interface {
-	GetOne(id int) *ApiResponse
-	GetAll(limit int, offset int) *ApiResponse
-	Post(req PostRequest) *ApiResponse
-	Put(req PutRequest) *ApiResponse
-	Delete(id int) *ApiResponse
+	GetOne(id int) (*ApiResponse, error)
+	GetAll(limit int, offset int) (*ApiResponse, error)
+	Post(req PostRequest) (*ApiResponse, error)
+	Put(req PutRequest) (*ApiResponse, error)
+	Delete(req DeleteRequest) (*ApiResponse, error)
 }
 
 type PostRequest interface{}

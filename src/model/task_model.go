@@ -5,11 +5,8 @@ import (
 	"gorm.io/gorm"
 	"repos/task_manager/src/db"
 	"repos/task_manager/src/entity"
-	"repos/task_manager/src/utils"
 	"time"
 )
-
-// TODO configure the app to return status 500 if it fails to handle the request
 
 type TaskModel struct{}
 
@@ -46,9 +43,11 @@ func NewTaskModel() *TaskModel {
 	return &TaskModel{}
 }
 
-func (t TaskModel) GetOne(id int) *ApiResponse {
+func (t TaskModel) GetOne(id int) (*ApiResponse, error) {
 	db, err := db.InitDB()
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 	var task entity.Task
 
 	db.Where("id = ?", id).Find(&task)
@@ -57,41 +56,49 @@ func (t TaskModel) GetOne(id int) *ApiResponse {
 		return &ApiResponse{
 			`{"error":"task not found"}`,
 			404,
-		}
+		}, nil
 	}
 
 	jsonResult, err := json.Marshal(task)
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 
 	return &ApiResponse{
 		string(jsonResult),
 		200,
-	}
+	}, nil
 }
 
-func (t TaskModel) GetAll(limit int, offset int) *ApiResponse {
+func (t TaskModel) GetAll(limit int, offset int) (*ApiResponse, error) {
 	db, err := db.InitDB()
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 
 	var tasks []entity.Task
 	db.Select("*").Limit(limit).Offset(offset).Find(&tasks)
 
 	result, err := json.Marshal(tasks)
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 	return &ApiResponse{
 		string(result),
 		200,
-	}
+	}, nil
 }
 
-func (t TaskModel) Post(req PostRequest) *ApiResponse {
+func (t TaskModel) Post(req PostRequest) (*ApiResponse, error) {
 	postReq, ok := req.(TaskPostRequest)
 	if !ok {
-		return &ApiResponse{`{"error": "bad request"}`, 400}
+		return &ApiResponse{`{"error": "bad request"}`, 400}, nil
 	}
 
 	db, err := db.InitDB()
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 
 	var task entity.Task
 	task.Title = postReq.Title
@@ -104,32 +111,36 @@ func (t TaskModel) Post(req PostRequest) *ApiResponse {
 	}
 
 	resultJson, err := json.Marshal(result)
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 
-	return &ApiResponse{string(resultJson), 200}
+	return &ApiResponse{string(resultJson), 200}, nil
 }
 
-func (t TaskModel) Put(req PutRequest) *ApiResponse {
+func (t TaskModel) Put(req PutRequest) (*ApiResponse, error) {
 	//TODO implement me
 	panic("implement me")
 	//db, err := db.InitDB()
 	//utils.LogIfError(err)
 }
 
-func (t TaskModel) Delete(req DeleteRequest) *ApiResponse {
+func (t TaskModel) Delete(req DeleteRequest) (*ApiResponse, error) {
 	delReq, ok := req.(TaskDeleteRequest)
 	if !ok {
-		return &ApiResponse{`{"error": "bad request"}`, 400}
+		return &ApiResponse{`{"error": "bad request"}`, 400}, nil
 	}
 	db, err := db.InitDB()
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 
 	var tasks []entity.Task
 	db.Find(&tasks, "id in ?", delReq.Ids)
 	if len(tasks) == 0 {
 		return &ApiResponse{
 			`{"error":"tasks not found"}`, 404,
-		}
+		}, nil
 	}
 
 	db.Delete(&tasks)
@@ -140,10 +151,12 @@ func (t TaskModel) Delete(req DeleteRequest) *ApiResponse {
 	}
 
 	resultJson, err := json.Marshal(result)
-	utils.LogIfError(err)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
 
 	return &ApiResponse{
 		string(resultJson),
 		200,
-	}
+	}, nil
 }
