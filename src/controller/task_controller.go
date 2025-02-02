@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	_ "gorm.io/gorm"
 	"net/http"
 	"net/url"
 	"repos/task_manager/src/model"
-	"repos/task_manager/src/utils"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -22,6 +22,18 @@ func NewTaskController() *TaskController {
 	return &TaskController{}
 }
 
+// GetController Handles GET requests for tasks
+// @Summary Get tasks
+// @Description Get tasks or single task by ID, also has pagination
+// @Tags tasks
+// @Produce json
+// @Param id path int false "task ID"
+// @Param page query int false "number of the page" default(1)
+// @Param limit query int false "max amount of tasks" default(1000)
+// @Success 200 {object} []entity.TaskForDocs{}|entity.TaskForDocs{} "task or list of tasks"
+// @Failure 404 {string} task not found
+// @Router /api/task.json/{id} [get]
+// @Router /api/task.json [get]
 func (This *TaskController) GetController(w http.ResponseWriter, r *http.Request) {
 	var result *model.ApiResponse
 	w.Header().Set("Content-Type", "application/json")
@@ -34,7 +46,7 @@ func (This *TaskController) GetController(w http.ResponseWriter, r *http.Request
 
 	if stringId == "" {
 		// TODO filters for updated_at and created_at columns
-		limit, offset, err := This.ParseGetParams(w, r)
+		limit, offset, err := This.ParseGetParams(r)
 		if err != nil {
 			switch err.Error() {
 			case "500":
@@ -84,7 +96,7 @@ func (*TaskController) PostController(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var taskPostRequest model.TaskPostRequest
 	err := decoder.Decode(&taskPostRequest)
-	utils.LogIfError(err)
+	HandleApiError(w)
 
 	result, err := taskModel.Post(taskPostRequest)
 	if err != nil {
@@ -117,7 +129,7 @@ func (*TaskController) DeleteController(w http.ResponseWriter, r *http.Request) 
 	HandleApiDefaultBehaviour(w, result)
 }
 
-func (*TaskController) ParseGetParams(w http.ResponseWriter, r *http.Request) (limit int, offset int, err error) {
+func (*TaskController) ParseGetParams(r *http.Request) (limit int, offset int, err error) {
 	limit = 1000
 
 	query, err := url.ParseQuery(r.URL.RawQuery)
