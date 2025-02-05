@@ -17,7 +17,7 @@ type TaskPostRequest struct {
 }
 
 type TaskPutRequest struct {
-	ID          string `json:"id"`
+	Id          string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
@@ -120,10 +120,34 @@ func (t TaskModel) Post(req PostRequest) (*ApiResponse, error) {
 }
 
 func (t TaskModel) Put(req PutRequest) (*ApiResponse, error) {
-	//TODO implement me
-	panic("implement me")
-	//db, err := db.InitDB()
-	//utils.LogIfError(err)
+	putReq, ok := req.(TaskPutRequest)
+	if !ok {
+		return &ApiResponse{`{"error": "bad request"}`, http.StatusBadRequest}, nil
+	}
+	db, err := db.InitDB()
+	if err != nil {
+		return &ApiResponse{}, err
+	}
+
+	var task entity.Task
+	db.Where("id = ?", putReq.Id).Find(&task)
+	if task.ID == 0 {
+		return &ApiResponse{
+			`{"error":"tasks not found"}`, http.StatusNotFound,
+		}, nil
+	}
+
+	task.Title = putReq.Title
+	task.Description = putReq.Description
+	db.Save(&task)
+
+	jsonResult, err := json.Marshal(task)
+	if err != nil {
+		return &ApiResponse{}, err
+	}
+
+	return &ApiResponse{JsonData: string(jsonResult), StatusCode: http.StatusOK}, nil
+
 }
 
 func (t TaskModel) Delete(req DeleteRequest) (*ApiResponse, error) {

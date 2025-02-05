@@ -11,10 +11,10 @@ type Task struct {
 	Description string `json:"description"`
 }
 
-type TaskForDocs struct {
-	ID          uint      `json:"id"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+type TaskEntity struct {
+	Id          uint      `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
 }

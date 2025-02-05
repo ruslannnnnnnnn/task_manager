@@ -96,9 +96,35 @@ func (*TaskController) PostController(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var taskPostRequest model.TaskPostRequest
 	err := decoder.Decode(&taskPostRequest)
-	HandleApiError(w)
+	if err != nil {
+		HandleApiError(w)
+		return
+	}
 
 	result, err := taskModel.Post(taskPostRequest)
+	if err != nil {
+		HandleApiError(w)
+		return
+	}
+
+	HandleApiDefaultBehaviour(w, result)
+}
+
+func (*TaskController) PutController(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	taskModel := model.NewTaskModel()
+
+	decoder := json.NewDecoder(r.Body)
+
+	var taskPutRequest model.TaskPutRequest
+	err := decoder.Decode(&taskPutRequest)
+	if err != nil {
+		HandleApiError(w)
+		return
+	}
+
+	result, err := taskModel.Put(taskPutRequest)
 	if err != nil {
 		HandleApiError(w)
 		return

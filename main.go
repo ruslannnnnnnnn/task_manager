@@ -29,6 +29,8 @@ func main() {
 
 	r.HandleFunc("/api/task.json", taskController.PostController).Methods("POST")
 
+	r.HandleFunc("/api/task.json", taskController.PutController).Methods("PUT")
+
 	r.HandleFunc("/api/task.json", taskController.DeleteController).Methods("DELETE")
 	// Routes
 
