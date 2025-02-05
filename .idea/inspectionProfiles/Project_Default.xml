@@ -1,0 +1,13 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GoDfaErrorMayBeNotNil" enabled="true" level="WARNING" enabled_by_default="true">
+      <functions>
+        <function importPath="repos/task_manager/src/db" name="InitDB" />
+      </functions>
+      <methods>
+        <method importPath="repos/task_manager/src/model" receiver="TaskModel" name="GetOne" />
+      </methods>
+    </inspection_tool>
+  </profile>
+</component>

@@ -11,7 +11,7 @@ type Task struct {
 	Description string `json:"description"`
 }
 
-type TaskEntity struct {
+type TaskDTO struct {
 	Id          uint      `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`

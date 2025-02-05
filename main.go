@@ -23,15 +23,15 @@ func main() {
 	// Routes
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler).Methods("GET")
 
-	r.HandleFunc("/api/task.json/{id}", taskController.GetController).Methods("GET")
-	r.HandleFunc("/api/task.json/", taskController.GetController).Methods("GET")
-	r.HandleFunc("/api/task.json", taskController.GetController).Methods("GET")
+	r.HandleFunc("/api/tasks.json/{id}", taskController.GetController).Methods("GET")
+	r.HandleFunc("/api/tasks.json/", taskController.GetController).Methods("GET")
+	r.HandleFunc("/api/tasks.json", taskController.GetController).Methods("GET")
 
-	r.HandleFunc("/api/task.json", taskController.PostController).Methods("POST")
+	r.HandleFunc("/api/tasks.json", taskController.PostController).Methods("POST")
 
-	r.HandleFunc("/api/task.json", taskController.PutController).Methods("PUT")
+	r.HandleFunc("/api/tasks.json", taskController.PutController).Methods("PUT")
 
-	r.HandleFunc("/api/task.json", taskController.DeleteController).Methods("DELETE")
+	r.HandleFunc("/api/tasks.json", taskController.DeleteController).Methods("DELETE")
 	// Routes
 
 	db.InitAutoMigrations()
