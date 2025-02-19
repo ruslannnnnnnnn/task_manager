@@ -10,3 +10,5 @@
 ```sh
 docker compose up --build
 ```
+## Docs
+#### docs available at `http://localhost:8080/swagger/`
