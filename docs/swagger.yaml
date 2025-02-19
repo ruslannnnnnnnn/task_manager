@@ -1,6 +1,18 @@
 basePath: /api
 definitions:
-  entity.TaskForDocs:
+  controller.BadRequestResponse:
+    properties:
+      error:
+        example: bad request
+        type: string
+    type: object
+  controller.TaskNotFoundResponse:
+    properties:
+      error:
+        example: Task not found
+        type: string
+    type: object
+  entity.TaskDTO:
     properties:
       created_at:
         type: string
@@ -13,6 +25,48 @@ definitions:
       updated_at:
         type: string
     type: object
+  model.TaskDeleteRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  model.TaskDeleteResponse:
+    properties:
+      statusCode:
+        type: integer
+    type: object
+  model.TaskPost:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+    type: object
+  model.TaskPostRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+  model.TaskPut:
+    properties:
+      id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  model.TaskPutRequest:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -20,53 +74,44 @@ info:
     on tasks
   title: task_manager API
 paths:
-  /api/task.json:
-    get:
-      description: Get tasks or single task by ID, also has pagination
+  /tasks.json:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes tasks by their IDs
       parameters:
-      - default: 1
-        description: number of the page
-        in: query
-        name: page
-        type: integer
-      - default: 1000
-        description: max amount of tasks
-        in: query
-        name: limit
-        type: integer
+      - description: List of task IDs
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/model.TaskDeleteRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.TaskForDocs'
-            type: array
-        "404":
-          description: Not Found
+            $ref: '#/definitions/model.TaskDeleteResponse'
+        "400":
+          description: Bad Request
           schema:
-            type: string
-      summary: Get tasks
+            $ref: '#/definitions/controller.BadRequestResponse'
+      summary: Delete tasks
       tags:
       - tasks
-  /api/task.json/{id}:
     get:
-      description: Get tasks or single task by ID, also has pagination
+      consumes:
+      - application/json
+      description: Returns a list of tasks with pagination
       parameters:
-      - description: task ID
-        in: path
-        name: id
-        type: integer
-      - default: 1
-        description: number of the page
-        in: query
-        name: page
-        type: integer
-      - default: 1000
-        description: max amount of tasks
+      - description: Limit
         in: query
         name: limit
+        type: integer
+      - description: Page
+        in: query
+        name: page
         type: integer
       produces:
       - application/json
@@ -75,13 +120,88 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.TaskForDocs'
+              $ref: '#/definitions/entity.TaskDTO'
             type: array
+      summary: Get a list of tasks
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Creates a new task
+      parameters:
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/model.TaskPostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.TaskPost'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.BadRequestResponse'
+      summary: Create a task
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing task
+      parameters:
+      - description: Task data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/model.TaskPutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TaskPut'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.BadRequestResponse'
         "404":
           description: Not Found
           schema:
-            type: string
-      summary: Get tasks
+            $ref: '#/definitions/controller.TaskNotFoundResponse'
+      summary: Update a task
+      tags:
+      - tasks
+  /tasks.json/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a task by its identifier
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.TaskDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.TaskNotFoundResponse'
+      summary: Get a task by ID
       tags:
       - tasks
 swagger: "2.0"

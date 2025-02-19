@@ -8,29 +8,30 @@
     "host": "localhost:8080",
     "basePath": "/api",
     "paths": {
-        "/api/task.json": {
+        "/tasks.json": {
             "get": {
-                "description": "Get tasks or single task by ID, also has pagination",
+                "description": "Returns a list of tasks with pagination",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Get tasks",
+                "summary": "Get a list of tasks",
                 "parameters": [
                     {
                         "type": "integer",
-                        "default": 1,
-                        "description": "number of the page",
-                        "name": "page",
+                        "description": "Limit",
+                        "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "default": 1000,
-                        "description": "max amount of tasks",
-                        "name": "limit",
+                        "description": "Page",
+                        "name": "page",
                         "in": "query"
                     }
                 ],
@@ -40,65 +41,166 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.TaskForDocs"
+                                "$ref": "#/definitions/entity.TaskDTO"
                             }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates an existing task",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Update a task",
+                "parameters": [
+                    {
+                        "description": "Task data",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TaskPutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.TaskPut"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.BadRequestResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/controller.TaskNotFoundResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new task",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Create a task",
+                "parameters": [
+                    {
+                        "description": "Task data",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TaskPostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.TaskPost"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.BadRequestResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes tasks by their IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Delete tasks",
+                "parameters": [
+                    {
+                        "description": "List of task IDs",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TaskDeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.TaskDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.BadRequestResponse"
                         }
                     }
                 }
             }
         },
-        "/api/task.json/{id}": {
+        "/tasks.json/{id}": {
             "get": {
-                "description": "Get tasks or single task by ID, also has pagination",
+                "description": "Returns a task by its identifier",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Get tasks",
+                "summary": "Get a task by ID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "task ID",
+                        "description": "Task ID",
                         "name": "id",
-                        "in": "path"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "number of the page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1000,
-                        "description": "max amount of tasks",
-                        "name": "limit",
-                        "in": "query"
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.TaskForDocs"
-                            }
+                            "$ref": "#/definitions/entity.TaskDTO"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/controller.TaskNotFoundResponse"
                         }
                     }
                 }
@@ -106,7 +208,25 @@
         }
     },
     "definitions": {
-        "entity.TaskForDocs": {
+        "controller.BadRequestResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "bad request"
+                }
+            }
+        },
+        "controller.TaskNotFoundResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Task not found"
+                }
+            }
+        },
+        "entity.TaskDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -122,6 +242,72 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TaskDeleteRequest": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "model.TaskDeleteResponse": {
+            "type": "object",
+            "properties": {
+                "statusCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.TaskPost": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.TaskPostRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TaskPut": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TaskPutRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "title": {
                     "type": "string"
                 }
             }

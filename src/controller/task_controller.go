@@ -47,7 +47,7 @@ func (This *TaskController) GetController(w http.ResponseWriter, r *http.Request
 		}
 
 		if getRes.GetStatus() >= 200 && getRes.GetStatus() <= 299 {
-			ApiReturnSuccess(w, string(jsonString), getRes.GetStatus())
+			ApiReturnResponse(w, string(jsonString), getRes.GetStatus())
 		}
 	} else if AtoiErr == nil {
 		getRes, err := taskModel.GetOne(id)
@@ -57,10 +57,10 @@ func (This *TaskController) GetController(w http.ResponseWriter, r *http.Request
 		}
 		jsonString, err := json.Marshal(getRes.GetBody())
 		if getRes.GetStatus() >= 400 && getRes.GetStatus() <= 499 {
-			ApiReturnSuccess(w, TaskNotFoundJsonString, getRes.GetStatus())
+			ApiReturnResponse(w, TaskNotFoundJsonString, getRes.GetStatus())
 			return
 		}
-		ApiReturnSuccess(w, string(jsonString), getRes.GetStatus())
+		ApiReturnResponse(w, string(jsonString), getRes.GetStatus())
 	} else {
 		ApiReturnBadRequest(w)
 	}
@@ -90,7 +90,7 @@ func (*TaskController) PostController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ApiReturnSuccess(w, string(resultJson), result.GetStatus())
+	ApiReturnResponse(w, string(resultJson), result.GetStatus())
 }
 
 func (*TaskController) PutController(w http.ResponseWriter, r *http.Request) {
@@ -119,7 +119,11 @@ func (*TaskController) PutController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ApiReturnSuccess(w, string(resultJson), result.GetStatus())
+	if result.GetStatus() >= 400 && result.GetStatus() <= 499 {
+		ApiReturnResponse(w, TaskNotFoundJsonString, result.GetStatus())
+	}
+
+	ApiReturnResponse(w, string(resultJson), result.GetStatus())
 }
 
 func (*TaskController) DeleteController(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +143,7 @@ func (*TaskController) DeleteController(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ApiReturnSuccess(w, SuccessMessageJsonString, result.GetStatus())
+	ApiReturnResponse(w, SuccessMessageJsonString, result.GetStatus())
 }
 
 func (*TaskController) ParseGetParams(r *http.Request) (limit int, offset int) {
