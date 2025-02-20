@@ -22,7 +22,7 @@ type ApiResponse interface {
 	GetBody() interface{}
 }
 
-////////////////////////////////////// request structs
+////////////////////////////////////// request body structs
 
 type TaskPostRequest struct {
 	Title       string `json:"title"`
@@ -42,7 +42,7 @@ type TaskDeleteRequest struct {
 /////////////////////////////////// response structs
 
 type TaskGetOneResponse struct {
-	Task       *entity.TaskDTO `json:"Tasks"`
+	Body       *entity.TaskDTO `json:"tasks"`
 	StatusCode int
 }
 
@@ -51,11 +51,11 @@ func (r *TaskGetOneResponse) GetStatus() int {
 }
 
 func (r *TaskGetOneResponse) GetBody() interface{} {
-	return r.Task
+	return r.Body
 }
 
 type TaskGetAllResponse struct {
-	Tasks      []*entity.TaskDTO `json:"task"`
+	Body       []*entity.TaskDTO `json:"task"`
 	StatusCode int
 }
 
@@ -64,11 +64,11 @@ func (r *TaskGetAllResponse) GetStatus() int {
 }
 
 func (r *TaskGetAllResponse) GetBody() interface{} {
-	return r.Tasks
+	return r.Body
 }
 
 type TaskPostResponse struct {
-	TaskPost   TaskPost
+	Body       TaskPostResponseBody
 	StatusCode int
 }
 
@@ -77,11 +77,11 @@ func (r *TaskPostResponse) GetStatus() int {
 }
 
 func (r *TaskPostResponse) GetBody() interface{} {
-	return r.TaskPost
+	return r.Body
 }
 
 type TaskPutResponse struct {
-	TaskPut    TaskPut
+	Body       TaskPutResponseBody
 	StatusCode int
 }
 
@@ -90,7 +90,7 @@ func (r *TaskPutResponse) GetStatus() int {
 }
 
 func (r *TaskPutResponse) GetBody() interface{} {
-	return r.TaskPut
+	return r.Body
 }
 
 type TaskDeleteResponse struct {
@@ -105,12 +105,12 @@ func (r *TaskDeleteResponse) GetBody() interface{} {
 	return nil
 }
 
-type TaskPost struct {
+type TaskPostResponseBody struct {
 	Id        uint      `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type TaskPut struct {
+type TaskPutResponseBody struct {
 	Id        uint      `json:"id"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

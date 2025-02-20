@@ -66,12 +66,16 @@ func (t TaskModel) GetAll(limit int, offset int) (ApiResponse, error) {
 
 	var result []*entity.TaskDTO
 
-	for _, task := range tasks {
-		result = append(result, CreateDTOFromTaskModel(&task))
+	if len(tasks) > 0 {
+		for _, task := range tasks {
+			result = append(result, CreateDTOFromTaskModel(&task))
+		}
+	} else {
+		result = []*entity.TaskDTO{}
 	}
 
 	return &TaskGetAllResponse{
-		Tasks:      result,
+		Body:       result,
 		StatusCode: http.StatusOK,
 	}, nil
 }
@@ -83,7 +87,7 @@ func (t TaskModel) GetAll(limit int, offset int) (ApiResponse, error) {
 // @Accept  json
 // @Produce  json
 // @Param task body TaskPostRequest true "Task data"
-// @Success 201 {object} TaskPost
+// @Success 201 {object} TaskPostResponseBody
 // @Failure 400 {object} controller.BadRequestResponse
 // @Router /tasks.json [post]
 func (t TaskModel) Post(req PostRequest) (ApiResponse, error) {
@@ -102,7 +106,7 @@ func (t TaskModel) Post(req PostRequest) (ApiResponse, error) {
 	task.Description = postReq.Description
 	db.Create(&task)
 
-	return &TaskPostResponse{TaskPost: TaskPost{task.ID, task.CreatedAt}, StatusCode: http.StatusCreated}, nil
+	return &TaskPostResponse{Body: TaskPostResponseBody{task.ID, task.CreatedAt}, StatusCode: http.StatusCreated}, nil
 }
 
 // Put updates an existing task
@@ -112,7 +116,7 @@ func (t TaskModel) Post(req PostRequest) (ApiResponse, error) {
 // @Accept  json
 // @Produce  json
 // @Param task body TaskPutRequest true "Task data"
-// @Success 200 {object} TaskPut
+// @Success 200 {object} TaskPutResponseBody
 // @Failure 400 {object} controller.BadRequestResponse
 // @Failure 404 {object} controller.TaskNotFoundResponse
 // @Router /tasks.json [put]
@@ -137,7 +141,7 @@ func (t TaskModel) Put(req PutRequest) (ApiResponse, error) {
 	db.Save(&task)
 
 	return &TaskPutResponse{
-		TaskPut: TaskPut{
+		Body: TaskPutResponseBody{
 			Id:        task.ID,
 			UpdatedAt: task.UpdatedAt,
 		},

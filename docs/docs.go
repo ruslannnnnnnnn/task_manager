@@ -81,7 +81,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.TaskPut"
+                            "$ref": "#/definitions/model.TaskPutResponseBody"
                         }
                     },
                     "400": {
@@ -125,7 +125,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.TaskPost"
+                            "$ref": "#/definitions/model.TaskPostResponseBody"
                         }
                     },
                     "400": {
@@ -272,17 +272,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.TaskPost": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
         "model.TaskPostRequest": {
             "type": "object",
             "properties": {
@@ -294,14 +283,14 @@ const docTemplate = `{
                 }
             }
         },
-        "model.TaskPut": {
+        "model.TaskPostResponseBody": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         },
@@ -315,6 +304,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TaskPutResponseBody": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

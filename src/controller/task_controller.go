@@ -12,10 +12,12 @@ import (
 )
 
 const (
-	QueryPageParamName       = "page"
-	QueryLimitParamName      = "limit"
-	TaskNotFoundJsonString   = `{"error": "Task not found"}`
-	SuccessMessageJsonString = `{"message":"success"}`
+	TaskGetAllDefaultLimitValue = 250
+	TaskGetAllMaxLimitValue     = 1000
+	QueryPageParamName          = "page"
+	QueryLimitParamName         = "limit"
+	TaskNotFoundJsonString      = `{"error": "Task not found"}`
+	SuccessMessageJsonString    = `{"message":"success"}`
 )
 
 type TaskController struct{}
@@ -34,7 +36,8 @@ func (This *TaskController) GetController(w http.ResponseWriter, r *http.Request
 	id, AtoiErr := strconv.Atoi(stringId)
 
 	if stringId == "" {
-		limit, offset := This.ParseGetParams(r)
+		limit, page := This.ParseGetParams(r)
+		offset := (page - 1) * limit
 		getRes, err := taskModel.GetAll(limit, offset)
 		if err != nil {
 			ApiReturnInternalServerError(w)
@@ -146,31 +149,31 @@ func (*TaskController) DeleteController(w http.ResponseWriter, r *http.Request) 
 	ApiReturnResponse(w, SuccessMessageJsonString, result.GetStatus())
 }
 
-func (*TaskController) ParseGetParams(r *http.Request) (limit int, offset int) {
-	limit = 1000
-	offset = 1
+func (*TaskController) ParseGetParams(r *http.Request) (limit int, page int) {
+	limit = TaskGetAllDefaultLimitValue
+	page = 1
 
 	query, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		return limit, offset
+		return limit, page
 	}
 
 	if query.Has(QueryPageParamName) {
-		offset, err = strconv.Atoi(query.Get(QueryPageParamName))
+		page, err = strconv.Atoi(query.Get(QueryPageParamName))
 		if err != nil {
-			return limit, offset
+			return limit, page
 		}
 	}
 
 	if query.Has(QueryLimitParamName) {
 		limit, err = strconv.Atoi(query.Get(QueryLimitParamName))
 		if err != nil {
-			return limit, offset
+			return limit, page
 		}
-		if limit > 1000 {
-			return 1000, offset
+		if limit > TaskGetAllMaxLimitValue {
+			return TaskGetAllMaxLimitValue, page
 		}
 	}
 
-	return limit, offset
+	return limit, page
 }

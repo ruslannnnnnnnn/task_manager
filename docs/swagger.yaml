@@ -37,13 +37,6 @@ definitions:
       statusCode:
         type: integer
     type: object
-  model.TaskPost:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: integer
-    type: object
   model.TaskPostRequest:
     properties:
       description:
@@ -51,12 +44,12 @@ definitions:
       title:
         type: string
     type: object
-  model.TaskPut:
+  model.TaskPostResponseBody:
     properties:
+      created_at:
+        type: string
       id:
         type: integer
-      updated_at:
-        type: string
     type: object
   model.TaskPutRequest:
     properties:
@@ -65,6 +58,13 @@ definitions:
       id:
         type: integer
       title:
+        type: string
+    type: object
+  model.TaskPutResponseBody:
+    properties:
+      id:
+        type: integer
+      updated_at:
         type: string
     type: object
 host: localhost:8080
@@ -142,7 +142,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/model.TaskPost'
+            $ref: '#/definitions/model.TaskPostResponseBody'
         "400":
           description: Bad Request
           schema:
@@ -167,7 +167,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.TaskPut'
+            $ref: '#/definitions/model.TaskPutResponseBody'
         "400":
           description: Bad Request
           schema:
