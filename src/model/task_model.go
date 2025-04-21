@@ -2,15 +2,17 @@ package model
 
 import (
 	"errors"
+	"gorm.io/gorm"
 	"net/http"
-	"repos/task_manager/src/db"
 	"repos/task_manager/src/entity"
 )
 
-type TaskModel struct{}
+type TaskModel struct {
+	db *gorm.DB
+}
 
-func NewTaskModel() *TaskModel {
-	return &TaskModel{}
+func NewTaskModel(db *gorm.DB) *TaskModel {
+	return &TaskModel{db: db}
 }
 
 // GetOne returns a task by its ID
@@ -24,13 +26,9 @@ func NewTaskModel() *TaskModel {
 // @Failure 404 {object} controller.TaskNotFoundResponse
 // @Router /tasks.json/{id} [get]
 func (t TaskModel) GetOne(id int) (ApiResponse, error) {
-	db, err := db.InitDB()
-	if err != nil {
-		return nil, err
-	}
 	var task entity.Task
 
-	db.Where("id = ?", id).Find(&task)
+	t.db.Where("id = ?", id).Find(&task)
 
 	if task.ID == 0 {
 		return &TaskGetOneResponse{
@@ -56,13 +54,8 @@ func (t TaskModel) GetOne(id int) (ApiResponse, error) {
 // @Success 200 {array} entity.TaskDTO
 // @Router /tasks.json [get]
 func (t TaskModel) GetAll(limit int, offset int) (ApiResponse, error) {
-	db, err := db.InitDB()
-	if err != nil {
-		return nil, err
-	}
-
 	var tasks []entity.Task
-	db.Select("*").Limit(limit).Offset(offset).Find(&tasks)
+	t.db.Select("*").Limit(limit).Offset(offset).Find(&tasks)
 
 	var result []*entity.TaskDTO
 
@@ -96,15 +89,10 @@ func (t TaskModel) Post(req PostRequest) (ApiResponse, error) {
 		return nil, errors.New("invalid post request")
 	}
 
-	db, err := db.InitDB()
-	if err != nil {
-		return nil, err
-	}
-
 	var task entity.Task
 	task.Title = postReq.Title
 	task.Description = postReq.Description
-	db.Create(&task)
+	t.db.Create(&task)
 
 	return &TaskPostResponse{Body: TaskPostResponseBody{task.ID, task.CreatedAt}, StatusCode: http.StatusCreated}, nil
 }
@@ -125,20 +113,16 @@ func (t TaskModel) Put(req PutRequest) (ApiResponse, error) {
 	if !ok {
 		return &TaskPutResponse{StatusCode: http.StatusBadRequest}, nil
 	}
-	db, err := db.InitDB()
-	if err != nil {
-		return nil, err
-	}
 
 	var task entity.Task
-	db.Where("id = ?", putReq.Id).Find(&task)
+	t.db.Where("id = ?", putReq.Id).Find(&task)
 	if task.ID == 0 {
 		return &TaskPutResponse{StatusCode: http.StatusNotFound}, nil
 	}
 
 	task.Title = putReq.Title
 	task.Description = putReq.Description
-	db.Save(&task)
+	t.db.Save(&task)
 
 	return &TaskPutResponse{
 		Body: TaskPutResponseBody{
@@ -164,15 +148,11 @@ func (t TaskModel) Delete(req DeleteRequest) (ApiResponse, error) {
 	if !ok {
 		return &TaskDeleteResponse{StatusCode: http.StatusBadRequest}, nil
 	}
-	db, err := db.InitDB()
-	if err != nil {
-		return nil, err
-	}
 
 	var tasks []entity.Task
-	db.Find(&tasks, "id in ?", delReq.Ids)
+	t.db.Find(&tasks, "id in ?", delReq.Ids)
 	if len(tasks) > 0 {
-		db.Delete(&tasks)
+		t.db.Delete(&tasks)
 	}
 	return &TaskDeleteResponse{StatusCode: http.StatusOK}, nil
 }

@@ -18,7 +18,11 @@ import (
 func main() {
 	r := mux.NewRouter()
 
-	taskController := controller.NewTaskController()
+	database, err := db.InitDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	taskController := controller.NewTaskController(database)
 
 	// Routes
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler).Methods("GET")

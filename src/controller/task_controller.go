@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"gorm.io/gorm"
 	_ "gorm.io/gorm"
 	"net/http"
 	"net/url"
@@ -20,23 +21,25 @@ const (
 	SuccessMessageJsonString    = `{"message":"success"}`
 )
 
-type TaskController struct{}
-
-func NewTaskController() *TaskController {
-	return &TaskController{}
+type TaskController struct {
+	db *gorm.DB
 }
 
-func (This *TaskController) GetController(w http.ResponseWriter, r *http.Request) {
+func NewTaskController(db *gorm.DB) *TaskController {
+	return &TaskController{db: db}
+}
+
+func (t *TaskController) GetController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	taskModel := model.NewTaskModel()
+	taskModel := model.NewTaskModel(t.db)
 
 	vars := mux.Vars(r)
 	stringId := vars["id"]
 	id, AtoiErr := strconv.Atoi(stringId)
 
 	if stringId == "" {
-		limit, page := This.ParseGetParams(r)
+		limit, page := t.ParseGetParams(r)
 		offset := (page - 1) * limit
 		getRes, err := taskModel.GetAll(limit, offset)
 		if err != nil {
@@ -69,9 +72,9 @@ func (This *TaskController) GetController(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (*TaskController) PostController(w http.ResponseWriter, r *http.Request) {
+func (t *TaskController) PostController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	taskModel := model.NewTaskModel()
+	taskModel := model.NewTaskModel(t.db)
 
 	decoder := json.NewDecoder(r.Body)
 	var taskPostRequest model.TaskPostRequest
@@ -96,10 +99,10 @@ func (*TaskController) PostController(w http.ResponseWriter, r *http.Request) {
 	ApiReturnResponse(w, string(resultJson), result.GetStatus())
 }
 
-func (*TaskController) PutController(w http.ResponseWriter, r *http.Request) {
+func (t *TaskController) PutController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	taskModel := model.NewTaskModel()
+	taskModel := model.NewTaskModel(t.db)
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -129,9 +132,9 @@ func (*TaskController) PutController(w http.ResponseWriter, r *http.Request) {
 	ApiReturnResponse(w, string(resultJson), result.GetStatus())
 }
 
-func (*TaskController) DeleteController(w http.ResponseWriter, r *http.Request) {
+func (t *TaskController) DeleteController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	taskModel := model.NewTaskModel()
+	taskModel := model.NewTaskModel(t.db)
 
 	decoder := json.NewDecoder(r.Body)
 	var taskDeleteRequest model.TaskDeleteRequest
